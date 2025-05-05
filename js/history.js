@@ -61,9 +61,18 @@ function loadHistory() {
         metadata.className = 'history-meta';
         let metaText = formatDate(item.timestamp);
         if (item.isDynamic) metaText += ' · Dynamic';
+        
+        // Add pattern style info
         if (item.cornerStyle && item.cornerStyle !== 'square') {
-            metaText += ' · ' + (item.cornerStyle === 'slightly-rounded' ? 'Rounded' : 'Very Rounded');
+            if (item.cornerStyle === 'circle') {
+                metaText += ' · Circle';
+            } else if (item.cornerStyle === 'slightly-rounded') {
+                metaText += ' · Rounded';
+            } else if (item.cornerStyle === 'very-rounded') {
+                metaText += ' · Very Rounded';
+            }
         }
+        
         metadata.textContent = metaText;
         details.appendChild(metadata);
         
