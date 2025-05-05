@@ -17,7 +17,7 @@
 - 🧠 **Local History Tracking**
   - See your past generated QR codes
   - Stored safely in your browser
-- 💾 **Download as PNG**
+- 💾 **Download as PNG, JPG or SVG**
 - 📱 Fully responsive design
 - ⚡ Blazing fast — no backend required
 
