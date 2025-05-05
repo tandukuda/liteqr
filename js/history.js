@@ -59,8 +59,12 @@ function loadHistory() {
         // Add metadata
         const metadata = document.createElement('div');
         metadata.className = 'history-meta';
-        metadata.textContent = formatDate(item.timestamp) + 
-            (item.isDynamic ? ' · Dynamic' : '');
+        let metaText = formatDate(item.timestamp);
+        if (item.isDynamic) metaText += ' · Dynamic';
+        if (item.cornerStyle && item.cornerStyle !== 'square') {
+            metaText += ' · ' + (item.cornerStyle === 'slightly-rounded' ? 'Rounded' : 'Very Rounded');
+        }
+        metadata.textContent = metaText;
         details.appendChild(metadata);
         
         // Create actions div
@@ -144,8 +148,9 @@ function restoreQrCode(index) {
     
     // Update form fields
     textInput.value = item.text;
-    qrSizeSelect.value = item.size;
-    errorLevelSelect.value = item.errorLevel;
+    qrSizeSelect.value = item.size || 300;
+    errorLevelSelect.value = item.errorLevel || 'M';
+    cornerStyleSelect.value = item.cornerStyle || 'square';
     foregroundColorInput.value = item.foregroundColor;
     backgroundColorInput.value = item.backgroundColor;
     dynamicQrCheckbox.checked = item.isDynamic;
