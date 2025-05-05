@@ -219,8 +219,13 @@ function applyCornerStyleToImage(qrImage, style) {
         let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
             <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
         
-        // Set radius based on corner style and module size
-        let radius = style === 'slightly-rounded' ? moduleSize * 0.3 : moduleSize * 0.5;
+        // Set radius based on corner style and module size - more QR-friendly values
+        let radius = 0;
+        if (style === 'slightly-rounded') {
+            radius = moduleSize * 0.15; // 15% rounding - very subtle but noticeable
+        } else if (style === 'very-rounded') {
+            radius = moduleSize * 0.3; // 30% rounding - more noticeable but still scannable
+        }
         
         // Create a 2D array to represent QR modules
         const modules = Array(moduleCount).fill().map(() => Array(moduleCount).fill(false));
@@ -244,12 +249,57 @@ function applyCornerStyleToImage(qrImage, style) {
             }
         }
         
+        // Detect finder patterns (the three large squares in corners)
+        // These are typically at positions:
+        // - Top left: Around (0,0)
+        // - Top right: Around (moduleCount-7, 0)
+        // - Bottom left: Around (0, moduleCount-7)
+        const finderPatterns = [];
+        
+        // Add finder pattern positions (approximate)
+        finderPatterns.push({
+            top: 0, left: 0, 
+            bottom: Math.floor(moduleCount/7) + 1, 
+            right: Math.floor(moduleCount/7) + 1
+        });
+        
+        finderPatterns.push({
+            top: 0, 
+            left: moduleCount - Math.floor(moduleCount/7) - 1, 
+            bottom: Math.floor(moduleCount/7) + 1, 
+            right: moduleCount
+        });
+        
+        finderPatterns.push({
+            top: moduleCount - Math.floor(moduleCount/7) - 1, 
+            left: 0, 
+            bottom: moduleCount, 
+            right: Math.floor(moduleCount/7) + 1
+        });
+        
+        // Function to check if a module is part of a finder pattern
+        function isInFinderPattern(row, col) {
+            for (const pattern of finderPatterns) {
+                if (row >= pattern.top && row < pattern.bottom && 
+                    col >= pattern.left && col < pattern.right) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         // Draw modules with rounded corners where appropriate
         for (let row = 0; row < moduleCount; row++) {
             for (let col = 0; col < moduleCount; col++) {
                 if (modules[row][col]) {
                     const x = col * moduleSize;
                     const y = row * moduleSize;
+                    
+                    // Don't round finder patterns
+                    if (isInFinderPattern(row, col)) {
+                        svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
+                        continue;
+                    }
                     
                     // Check surrounding modules to determine corners
                     const hasTop = row > 0 && modules[row-1][col];
@@ -263,18 +313,24 @@ function applyCornerStyleToImage(qrImage, style) {
                     const bottomLeftRadius = (!hasBottom && !hasLeft) ? radius : 0;
                     const bottomRightRadius = (!hasBottom && !hasRight) ? radius : 0;
                     
-                    // Create path for rounded corners
-                    svgContent += `<path d="
-                        M ${x + topLeftRadius} ${y}
-                        L ${x + moduleSize - topRightRadius} ${y}
-                        Q ${x + moduleSize} ${y} ${x + moduleSize} ${y + topRightRadius}
-                        L ${x + moduleSize} ${y + moduleSize - bottomRightRadius}
-                        Q ${x + moduleSize} ${y + moduleSize} ${x + moduleSize - bottomRightRadius} ${y + moduleSize}
-                        L ${x + bottomLeftRadius} ${y + moduleSize}
-                        Q ${x} ${y + moduleSize} ${x} ${y + moduleSize - bottomLeftRadius}
-                        L ${x} ${y + topLeftRadius}
-                        Q ${x} ${y} ${x + topLeftRadius} ${y}
-                        Z" fill="${foregroundColorInput.value}" />`;
+                    // If no rounded corners, just use a rectangle
+                    if (topLeftRadius === 0 && topRightRadius === 0 && 
+                        bottomLeftRadius === 0 && bottomRightRadius === 0) {
+                        svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
+                    } else {
+                        // Create path for rounded corners
+                        svgContent += `<path d="
+                            M ${x + topLeftRadius} ${y}
+                            L ${x + moduleSize - topRightRadius} ${y}
+                            Q ${x + moduleSize} ${y} ${x + moduleSize} ${y + topRightRadius}
+                            L ${x + moduleSize} ${y + moduleSize - bottomRightRadius}
+                            Q ${x + moduleSize} ${y + moduleSize} ${x + moduleSize - bottomRightRadius} ${y + moduleSize}
+                            L ${x + bottomLeftRadius} ${y + moduleSize}
+                            Q ${x} ${y + moduleSize} ${x} ${y + moduleSize - bottomLeftRadius}
+                            L ${x} ${y + topLeftRadius}
+                            Q ${x} ${y} ${x + topLeftRadius} ${y}
+                            Z" fill="${foregroundColorInput.value}" />`;
+                    }
                 }
             }
         }
