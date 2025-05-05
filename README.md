@@ -34,7 +34,7 @@
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/liteqr.git
+git clone https://github.com/tandukuda/liteqr.git
 cd liteqr
 ```
 
