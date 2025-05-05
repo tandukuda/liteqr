@@ -1,22 +1,50 @@
-# LiteQR – Advanced QR Code Generator
+# LiteQR
 
-LiteQR is a lightweight, privacy-friendly QR code tool with customization, dynamic linking, and local QR history.  
-Perfect for creators, marketers, developers — anyone who needs fast, flexible QR codes without the bloat.
+A lightweight, fast QR code generator with dynamic capabilities and customization options.
 
-## 🚀 Features
-- Static & (optional) dynamic QR support
-- QR customization: color, size, error correction
-- Local history of generated QR codes
-- One-click PNG, JPG, SVG download
-- Fully offline-capable
+## Features
 
-## 🛠 Tech Stack
-- HTML / CSS / JavaScript
-- QRious.js (static)
-- Vercel hosting
+- Generate QR codes instantly for URLs or text
+- Customize QR code size, color, and error correction levels
+- Create dynamic QR codes that can be tracked
+- Save QR code history for quick access
+- Download QR codes in PNG, JPG, or SVG formats
+- Dark and light theme support
+- Responsive design for all device sizes
 
-## 📦 Live
-- [liteqr.vercel.app](https://liteqr.vercel.app)
+## Technologies Used
 
-## 🧑‍💻 Contributing
-Open to ideas and PRs! See [issues](https://github.com/yourusername/liteqr/issues).
+- Vanilla JavaScript
+- QRCode.js library
+- Vercel Serverless Functions for dynamic QR codes
+- LocalStorage for history management
+
+## How to Use
+
+1. Enter a URL or text
+2. Customize your QR code
+3. Choose whether to make it dynamic
+4. Click "Generate QR Code"
+5. Download your QR code in your preferred format
+
+## Deployment
+
+This project is deployed on Vercel. You can visit the live version at [liteqr.vercel.app](https://liteqr.vercel.app).
+
+## Local Development
+
+To run this project locally:
+
+1. Clone the repository
+2. Run a local server (e.g., using `npx serve` or Live Server extension in VS Code)
+3. The dynamic QR codes will only work in full when deployed to Vercel
+
+## License
+
+MIT
+
+## Credits
+
+- [QRCode.js](https://github.com/davidshimjs/qrcodejs) - QR Code generation library
+- [Font Awesome](https://fontawesome.com/) - Icons
+- [Rosé Pine](https://rosepinetheme.com/) - Color scheme inspiration
