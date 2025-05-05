@@ -1,50 +1,94 @@
-# LiteQR
+# 🌐 LiteQR
 
-A lightweight, fast QR code generator with dynamic capabilities and customization options.
+**LiteQR** is a lightweight, privacy-focused, open-source QR Code generator — built for speed, flexibility, and full control. Generate static QR codes with customization options, error correction levels, history tracking, and light/dark themes — all without paying for premium tiers.
 
-## Features
+> 🔗 Live: [https://liteqr.vercel.app](https://liteqr.vercel.app)
 
-- Generate QR codes instantly for URLs or text
-- Customize QR code size, color, and error correction levels
-- Create dynamic QR codes that can be tracked
-- Save QR code history for quick access
-- Download QR codes in PNG, JPG, or SVG formats
-- Dark and light theme support
-- Responsive design for all device sizes
+---
 
-## Technologies Used
+## ✨ Features
 
-- Vanilla JavaScript
-- QRCode.js library
-- Vercel Serverless Functions for dynamic QR codes
-- LocalStorage for history management
+- ✅ **Static QR Code Generator**
+- 🎨 **Customizable Options**
+  - Foreground and background colors
+  - Size input (pixels)
+  - Error correction level (L, M, Q, H)
+- 🌓 **Dark Mode Support**
+- 🧠 **Local History Tracking**
+  - See your past generated QR codes
+  - Stored safely in your browser
+- 💾 **Download as PNG**
+- 📱 Fully responsive design
+- ⚡ Blazing fast — no backend required
 
-## How to Use
+---
 
-1. Enter a URL or text
-2. Customize your QR code
-3. Choose whether to make it dynamic
-4. Click "Generate QR Code"
-5. Download your QR code in your preferred format
+## 📸 Preview
 
-## Deployment
+![LiteQR](https://github.com/user-attachments/assets/6abc5692-e7ba-4e85-bd71-0c64e0c7e7f4)
 
-This project is deployed on Vercel. You can visit the live version at [liteqr.vercel.app](https://liteqr.vercel.app).
+---
 
-## Local Development
+## 🚀 Getting Started
 
-To run this project locally:
+### 1. Clone the repository
 
-1. Clone the repository
-2. Run a local server (e.g., using `npx serve` or Live Server extension in VS Code)
-3. The dynamic QR codes will only work in full when deployed to Vercel
+```bash
+git clone https://github.com/yourusername/liteqr.git
+cd liteqr
+```
 
-## License
+### 2. Install dependencies (optional — static-only)
 
-MIT
+This project is **fully static** and doesn't require a build step. Just open `index.html` or deploy it.
 
-## Credits
+### 3. Deploy to Vercel
 
-- [QRCode.js](https://github.com/davidshimjs/qrcodejs) - QR Code generation library
-- [Font Awesome](https://fontawesome.com/) - Icons
-- [Rosé Pine](https://rosepinetheme.com/) - Color scheme inspiration
+Push it to GitHub and connect the repo to [Vercel](https://vercel.com) — it just works™.
+
+---
+
+## 📁 Project Structure
+
+```
+LiteQR/
+├── index.html                 # Main UI
+├── redirect.html             # (optional) For dynamic redirection
+├── css/styles.css
+├── js/
+│   ├── main.js               # App logic
+│   ├── qr-generator.js       # QR creation logic
+│   ├── history.js            # Local history handling
+│   ├── theme.js              # Dark/light mode
+│   └── utils.js              # Helper functions
+├── assets/                   # Icons, favicon, etc.
+└── vercel.json               # Optional routing config
+```
+
+---
+
+## 📌 Planned Features / TODO
+
+- [X] SVG export
+- [X] Dynamic QR redirection (optional Firebase layer)
+- [ ] Share via Web Share API
+- [ ] Installable PWA support
+
+---
+
+## 🧑‍💻 Contributing
+
+Pull requests are welcome! Feel free to open an issue for any bugs or feature requests.
+
+---
+
+## 📄 License
+
+MIT License — do whatever you want, but don’t claim you made it 😉
+
+---
+
+## 💬 Credits
+
+Made with ❤️ by [@tandukuda](https://github.com/tandukuda)  
+Inspired by the frustration with "paywalled QR code features."
