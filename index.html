@@ -7,7 +7,7 @@
     <meta name="description" content="Free QR code generator with customization options, history tracking and dynamic QR codes">
     
     <!-- Simplified favicon -->
-    <link rel="icon" href="assets/favicon.ico">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -51,6 +51,15 @@
                         <option value="M" selected>Medium (15%)</option>
                         <option value="Q">Quartile (25%)</option>
                         <option value="H">High (30%)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="corner-style">Corner Style</label>
+                    <select id="corner-style">
+                        <option value="square" selected>Square (Default)</option>
+                        <option value="slightly-rounded">Slightly Rounded</option>
+                        <option value="very-rounded">Very Rounded</option>
                     </select>
                 </div>
                 
@@ -131,7 +140,7 @@
     </div>
 
     <footer>
-        <p>LiteQR &copy; <span id="current-year"></span> | Made with <i class="fas fa-heart" style="color: var(--highlight);"></i> by tandukuda</p>
+        <p>LiteQR &copy; <span id="current-year"></span> | Made with <i class="fas fa-heart" style="color: var(--highlight);"></i></p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
