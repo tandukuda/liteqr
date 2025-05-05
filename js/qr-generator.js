@@ -6,7 +6,6 @@
 const textInput = document.getElementById('text-input');
 const qrSizeSelect = document.getElementById('qr-size');
 const errorLevelSelect = document.getElementById('error-level');
-const cornerStyleSelect = document.getElementById('corner-style');
 const foregroundColorInput = document.getElementById('foreground-color');
 const backgroundColorInput = document.getElementById('background-color');
 const dynamicQrCheckbox = document.getElementById('dynamic-qr');
@@ -33,7 +32,6 @@ function generateQR() {
     const text = textInput.value.trim();
     const size = parseInt(qrSizeSelect.value);
     const errorLevel = errorLevelSelect.value;
-    const cornerStyle = cornerStyleSelect.value;
     const foregroundColor = foregroundColorInput.value;
     const backgroundColor = backgroundColorInput.value;
     const isDynamic = dynamicQrCheckbox.checked;
@@ -94,26 +92,12 @@ function generateQR() {
             // Remove generating class
             qrcodeDiv.classList.remove('generating');
             
-            // If a non-default pattern style is selected, apply it after a slight delay
-            // to ensure the QR code has fully rendered
-            if (cornerStyle !== 'square') {
-                setTimeout(() => {
-                    try {
-                        applyStyle(cornerStyle);
-                    } catch (error) {
-                        console.error('Error applying style:', error);
-                        // If styling fails, the original QR code is still visible
-                    }
-                }, 100);
-            }
-            
             // Save to history
             const qrData = {
                 text: text,
                 isDynamic: isDynamic,
                 size: size,
                 errorLevel: errorLevel,
-                cornerStyle: cornerStyle,
                 foregroundColor: foregroundColor,
                 backgroundColor: backgroundColor,
                 timestamp: new Date().toISOString()
@@ -143,290 +127,6 @@ function generateQR() {
             placeholderText.style.display = 'block';
         }
     }, 600);
-}
-
-// Function to apply style to the QR code based on selection
-function applyStyle(style) {
-    // Skip if the style is square (default)
-    if (style === 'square') return;
-    
-    // Get the QR code image
-    const qrImage = qrcodeDiv.querySelector('img');
-    
-    if (!qrImage || !qrImage.complete) {
-        // If image isn't loaded yet, wait for it
-        if (qrImage) {
-            qrImage.onload = function() {
-                applyStyleToImage(qrImage, style);
-            };
-        }
-        return;
-    }
-    
-    applyStyleToImage(qrImage, style);
-}
-
-function applyStyleToImage(qrImage, style) {
-    try {
-        // Create a container for our styled QR code
-        const svgContainer = document.createElement('div');
-        svgContainer.className = 'styled-qr-container';
-        svgContainer.style.width = qrImage.width + 'px';
-        svgContainer.style.height = qrImage.height + 'px';
-        
-        // Draw the QR code to a canvas to analyze its pixel data
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = qrImage.width;
-        canvas.height = qrImage.height;
-        ctx.drawImage(qrImage, 0, 0);
-        
-        // Get pixel data
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        
-        // Determine the module size by analyzing the image
-        const size = qrImage.width;
-        let moduleSize = 0;
-        
-        // Scan the image to find the first black pixel (start of a module)
-        let startX = 0;
-        for (let x = 0; x < size; x++) {
-            const index = (x + size * 10) * 4; // check on the 10th row
-            if (data[index] < 128) { // black pixel
-                startX = x;
-                break;
-            }
-        }
-        
-        // Find the width of the module
-        let endX = startX;
-        for (let x = startX; x < size; x++) {
-            const index = (x + size * 10) * 4;
-            if (data[index] >= 128) { // white pixel
-                endX = x;
-                break;
-            }
-        }
-        
-        moduleSize = endX - startX;
-        if (moduleSize <= 0) moduleSize = Math.floor(size / 25); // Fallback
-        
-        // Estimate module count based on moduleSize
-        const moduleCount = Math.ceil(size / moduleSize);
-        
-        // Apply different styling based on the selected style
-        let svgContent = '';
-        
-        if (style === 'circle') {
-            svgContent = createCircularQRCode(data, size, moduleSize, moduleCount);
-        } else {
-            // Rounded corner styles
-            let radius = 0;
-            if (style === 'slightly-rounded') {
-                radius = moduleSize * 0.15; // 15% rounding - very subtle but noticeable
-            } else if (style === 'very-rounded') {
-                radius = moduleSize * 0.3; // 30% rounding - more noticeable but still scannable
-            }
-            
-            svgContent = createRoundedQRCode(data, size, moduleSize, moduleCount, radius);
-        }
-        
-        // Add the SVG to the container
-        svgContainer.innerHTML = svgContent;
-        
-        // Replace the original QR code with our styled version
-        qrImage.style.display = 'none';
-        qrImage.insertAdjacentElement('afterend', svgContainer);
-        
-        // Update download links with the styled QR code
-        const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
-        const svgUrl = URL.createObjectURL(svgBlob);
-        downloadSvg.href = svgUrl;
-        
-        // Update PNG and JPG links
-        const svgImage = new Image();
-        svgImage.onload = function() {
-            const canvas = document.createElement('canvas');
-            canvas.width = size;
-            canvas.height = size;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(svgImage, 0, 0, size, size);
-            downloadPng.href = canvas.toDataURL('image/png');
-            downloadJpg.href = canvas.toDataURL('image/jpeg', 0.95);
-        };
-        svgImage.src = svgUrl;
-        
-    } catch (error) {
-        console.error('Error styling QR code:', error);
-        // Make original QR code visible in case of an error
-        qrImage.style.display = 'block';
-    }
-}
-
-// Function to create a circular QR code
-function createCircularQRCode(data, size, moduleSize, moduleCount) {
-    // Start SVG content
-    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
-    
-    // Create a 2D array to represent QR modules
-    const modules = Array(moduleCount).fill().map(() => Array(moduleCount).fill(false));
-    
-    // Detect dark modules
-    for (let row = 0; row < moduleCount; row++) {
-        for (let col = 0; col < moduleCount; col++) {
-            // Check the center of each module
-            const x = Math.floor((col + 0.5) * moduleSize);
-            const y = Math.floor((row + 0.5) * moduleSize);
-            
-            // Skip if out of bounds
-            if (x >= size || y >= size) continue;
-            
-            const pixelIndex = (y * size + x) * 4;
-            
-            // If pixel is dark (not white)
-            if (pixelIndex < data.length && data[pixelIndex] < 128) {
-                modules[row][col] = true;
-            }
-        }
-    }
-    
-    // Draw each module as a circle
-    for (let row = 0; row < moduleCount; row++) {
-        for (let col = 0; col < moduleCount; col++) {
-            if (modules[row][col]) {
-                // Calculate the center of the module
-                const centerX = (col + 0.5) * moduleSize;
-                const centerY = (row + 0.5) * moduleSize;
-                
-                // Use a much smaller radius (15% of module size)
-                const radius = moduleSize * 0.15;
-                
-                // Add the circle to the SVG
-                svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
-            }
-        }
-    }
-    
-    // Close SVG
-    svgContent += `</svg>`;
-    return svgContent;
-}
-
-// Function to create a rounded-corner QR code
-function createRoundedQRCode(data, size, moduleSize, moduleCount, radius) {
-    // Create a 2D array to represent QR modules
-    const modules = Array(moduleCount).fill().map(() => Array(moduleCount).fill(false));
-    
-    // Detect dark modules
-    for (let row = 0; row < moduleCount; row++) {
-        for (let col = 0; col < moduleCount; col++) {
-            // Check the center of each module
-            const x = Math.floor((col + 0.5) * moduleSize);
-            const y = Math.floor((row + 0.5) * moduleSize);
-            
-            // Skip if out of bounds
-            if (x >= size || y >= size) continue;
-            
-            const pixelIndex = (y * size + x) * 4;
-            
-            // If pixel is dark (not white)
-            if (pixelIndex < data.length && data[pixelIndex] < 128) {
-                modules[row][col] = true;
-            }
-        }
-    }
-    
-    // Detect finder patterns (the three large squares in corners)
-    const finderPatterns = [];
-    
-    // Add finder pattern positions (approximate)
-    finderPatterns.push({
-        top: 0, left: 0, 
-        bottom: Math.floor(moduleCount/7) + 1, 
-        right: Math.floor(moduleCount/7) + 1
-    });
-    
-    finderPatterns.push({
-        top: 0, 
-        left: moduleCount - Math.floor(moduleCount/7) - 1, 
-        bottom: Math.floor(moduleCount/7) + 1, 
-        right: moduleCount
-    });
-    
-    finderPatterns.push({
-        top: moduleCount - Math.floor(moduleCount/7) - 1, 
-        left: 0, 
-        bottom: moduleCount, 
-        right: Math.floor(moduleCount/7) + 1
-    });
-    
-    // Function to check if a module is part of a finder pattern
-    function isInFinderPattern(row, col) {
-        for (const pattern of finderPatterns) {
-            if (row >= pattern.top && row < pattern.bottom && 
-                col >= pattern.left && col < pattern.right) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    // Start SVG content
-    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
-    
-    // Draw modules with rounded corners where appropriate
-    for (let row = 0; row < moduleCount; row++) {
-        for (let col = 0; col < moduleCount; col++) {
-            if (modules[row][col]) {
-                const x = col * moduleSize;
-                const y = row * moduleSize;
-                
-                // Don't round finder patterns
-                if (isInFinderPattern(row, col)) {
-                    svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
-                    continue;
-                }
-                
-                // Check surrounding modules to determine corners
-                const hasTop = row > 0 && modules[row-1][col];
-                const hasRight = col < moduleCount-1 && modules[row][col+1];
-                const hasBottom = row < moduleCount-1 && modules[row+1][col];
-                const hasLeft = col > 0 && modules[row][col-1];
-                
-                // Calculate corner radii
-                const topLeftRadius = (!hasTop && !hasLeft) ? radius : 0;
-                const topRightRadius = (!hasTop && !hasRight) ? radius : 0;
-                const bottomLeftRadius = (!hasBottom && !hasLeft) ? radius : 0;
-                const bottomRightRadius = (!hasBottom && !hasRight) ? radius : 0;
-                
-                // If no rounded corners, just use a rectangle
-                if (topLeftRadius === 0 && topRightRadius === 0 && 
-                    bottomLeftRadius === 0 && bottomRightRadius === 0) {
-                    svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
-                } else {
-                    // Create path for rounded corners
-                    svgContent += `<path d="
-                        M ${x + topLeftRadius} ${y}
-                        L ${x + moduleSize - topRightRadius} ${y}
-                        Q ${x + moduleSize} ${y} ${x + moduleSize} ${y + topRightRadius}
-                        L ${x + moduleSize} ${y + moduleSize - bottomRightRadius}
-                        Q ${x + moduleSize} ${y + moduleSize} ${x + moduleSize - bottomRightRadius} ${y + moduleSize}
-                        L ${x + bottomLeftRadius} ${y + moduleSize}
-                        Q ${x} ${y + moduleSize} ${x} ${y + moduleSize - bottomLeftRadius}
-                        L ${x} ${y + topLeftRadius}
-                        Q ${x} ${y} ${x + topLeftRadius} ${y}
-                        Z" fill="${foregroundColorInput.value}" />`;
-                }
-            }
-        }
-    }
-    
-    // Close SVG
-    svgContent += `</svg>`;
-    return svgContent;
 }
 
 // Function to update download links
@@ -487,13 +187,7 @@ function generateSvgQrCode() {
             return '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50">QR Error</text></svg>';
         }
         
-        // If we have a styled QR code, use that SVG
-        const styledQR = qrcodeDiv.querySelector('.styled-qr-container');
-        if (styledQR && styledQR.innerHTML) {
-            return styledQR.innerHTML;
-        }
-        
-        // Otherwise generate a basic SVG from the image
+        // Get the QR code image
         const qrImage = qrcodeDiv.querySelector('img');
         if (!qrImage) {
             return '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50">QR Error</text></svg>';
@@ -541,7 +235,6 @@ window.regenerateQRWithThemeColors = function() {
     const text = textInput.value.trim();
     const size = parseInt(qrSizeSelect.value);
     const errorLevel = errorLevelSelect.value;
-    const cornerStyle = cornerStyleSelect.value;
     
     // Get theme-appropriate colors if user hasn't set custom colors
     const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
