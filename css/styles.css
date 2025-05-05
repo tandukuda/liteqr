@@ -177,6 +177,8 @@ header p {
     gap: 1rem;
     max-height: 300px;
     overflow-y: auto;
+    min-height: 60px;
+    position: relative;
 }
 
 .history-item {
@@ -515,7 +517,7 @@ button:active {
     border: 1px solid var(--border-color);
     transition: var(--transition);
     width: 100%;
-    position: relative;
+    position: relative; /* Added for placeholder positioning */
 }
 
 @media (min-width: 768px) {
@@ -640,10 +642,24 @@ footer {
     transition: var(--transition);
 }
 
+/* Updated style for placeholder text */
 .placeholder-text {
     color: var(--text-secondary);
     text-align: center;
     font-size: 0.95rem;
+}
+
+/* Special styling for no-history text to center it */
+#no-history {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+}
+
+/* QR container placeholder styling */
+#placeholder-text {
     position: absolute;
     top: 50%;
     left: 50%;
