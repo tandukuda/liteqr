@@ -160,6 +160,13 @@ function restoreQrCode(index) {
 function clearHistory() {
     if (confirm('Are you sure you want to clear all history?')) {
         localStorage.removeItem('qrHistory');
+        
+        // Update UI immediately
+        noHistoryMessage.style.display = 'block';
+        historyContainer.innerHTML = '';
+        historyContainer.appendChild(noHistoryMessage);
+        
+        // Also call loadHistory to ensure everything is properly reset
         loadHistory();
     }
 }
