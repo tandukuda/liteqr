@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .redirect-container {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 1rem;
+        }
+        
+        .target-url {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            word-break: break-all;
+            margin: 1.5rem 0;
+            font-family: monospace;
+            color: var(--text-color);
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(var(--primary-color-rgb), 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin: 1rem 0;
+        }
+        
+        .redirect-btn {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="redirect-container">
+        <h1>Redirecting you to:</h1>
+        <div class="target-url" id="target-url"></div>
+        <div class="loader"></div>
+        <p>You will be redirected automatically in a few seconds.</p>
+        <a id="manual-redirect" href="#">
+            <button class="redirect-btn">
+                <span>Go Now</span>
+                <i class="fas fa-external-link-alt"></i>
+            </button>
+        </a>
+    </div>
+    
+    <script>
+        // Get the target from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const target = urlParams.get('target');
+        
+        if (target) {
+            // Display the target URL
+            document.getElementById('target-url').textContent = target;
+            document.getElementById('manual-redirect').href = target;
+            
+            // Redirect after a short delay
+            setTimeout(() => {
+                window.location.href = target;
+            }, 3000);
+        } else {
+            document.getElementById('target-url').textContent = 'No target URL specified';
+            document.querySelector('.loader').style.display = 'none';
+            document.getElementById('manual-redirect').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

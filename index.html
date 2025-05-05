@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiteQR - Create and download QR codes in seconds</title>
+    <meta name="description" content="Free QR code generator with customization options, history tracking and dynamic QR codes">
+    
+    <!-- Simplified favicon -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode">
+            <i class="fas fa-moon"></i>
+        </button>
+        <h1>LiteQR</h1>
+        <p>Create and download QR codes in seconds</p>
+    </header>
+
+    <div class="container">
+        <div class="app-container">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="text-input">Enter URL or Text</label>
+                    <input 
+                        type="text" 
+                        id="text-input" 
+                        placeholder="https://example.com or any text"
+                        autocomplete="off"
+                    >
+                    <div class="error-message" id="input-error">Please enter a valid URL or text</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="qr-size">QR Code Size</label>
+                    <select id="qr-size">
+                        <option value="200">Small (200x200)</option>
+                        <option value="300" selected>Medium (300x300)</option>
+                        <option value="400">Large (400x400)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="error-level">Error Correction</label>
+                    <select id="error-level">
+                        <option value="L">Low (7%)</option>
+                        <option value="M" selected>Medium (15%)</option>
+                        <option value="Q">Quartile (25%)</option>
+                        <option value="H">High (30%)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>QR Code Colors</label>
+                    <div class="color-pickers">
+                        <div class="color-picker-group">
+                            <label for="foreground-color">Foreground</label>
+                            <input type="color" id="foreground-color" value="#575279">
+                        </div>
+                        <div class="color-picker-group">
+                            <label for="background-color">Background</label>
+                            <input type="color" id="background-color" value="#fffaf3">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="dynamic-qr-toggle">
+                        <input type="checkbox" id="dynamic-qr" class="toggle-checkbox">
+                        <label for="dynamic-qr" class="toggle-label">Make Dynamic QR</label>
+                        <div class="tooltip">
+                            <i class="fas fa-info-circle"></i>
+                            <span class="tooltip-text">Dynamic QRs can be tracked and updated later</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="generate-btn">
+                    <span>Generate QR Code</span>
+                    <i class="fas fa-qrcode"></i>
+                </button>
+            </div>
+
+            <div class="output-section">
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                    <p id="placeholder-text" class="placeholder-text">Your QR code will appear here</p>
+                </div>
+                <div id="download-options" class="download-options hidden">
+                    <a id="download-png" href="#" download="qrcode.png">
+                        <button class="download-btn png">
+                            <span>PNG</span>
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </a>
+                    <a id="download-jpg" href="#" download="qrcode.jpg">
+                        <button class="download-btn jpg">
+                            <span>JPG</span>
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </a>
+                    <a id="download-svg" href="#" download="qrcode.svg">
+                        <button class="download-btn svg">
+                            <span>SVG</span>
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- History Panel -->
+        <div class="history-panel">
+            <div class="history-header">
+                <h2>History</h2>
+                <button id="clear-history" class="clear-btn">
+                    <i class="fas fa-trash"></i>
+                    Clear
+                </button>
+            </div>
+            <div id="history-container" class="history-container">
+                <p id="no-history" class="placeholder-text">No history yet</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>LiteQR &copy; <span id="current-year"></span> | Made with <i class="fas fa-heart" style="color: var(--highlight);"></i></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/qr-generator.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
