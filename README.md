@@ -1,6 +1,6 @@
 # 🌐 LiteQR
 
-**LiteQR** is a lightweight, privacy-focused, open-source QR Code generator — built for speed, flexibility, and full control. Generate static QR codes with customization options, error correction levels, history tracking, and light/dark themes — all without paying for premium tiers.
+**LiteQR** is a fast, privacy-friendly QR code generator built for simplicity and utility. It supports both **static** and **dynamic** QR codes — all with no tracking, no paywalls, and no unnecessary clutter.
 
 > 🔗 Live: [https://liteqr.vercel.app](https://liteqr.vercel.app)
 
@@ -8,18 +8,23 @@
 
 ## ✨ Features
 
-- ✅ **Static QR Code Generator**
-- 🎨 **Customizable Options**
-  - Foreground and background colors
-  - Size input (pixels)
-  - Error correction level (L, M, Q, H)
-- 🌓 **Dark Mode Support**
-- 🧠 **Local History Tracking**
-  - See your past generated QR codes
-  - Stored safely in your browser
-- 💾 **Download as PNG, JPG or SVG**
-- 📱 Fully responsive design
-- ⚡ Blazing fast — no backend required
+* 🧩 **Static & Dynamic QR codes**</br>
+Generate regular QR codes or use dynamic mode to update destination links without changing the code.
+
+* 🎨 **Customization**</br>
+  Choose your size, color, background, and error correction level.
+
+* 🖼️ **Multiple export formats**</br>
+  Export your QR code as **PNG**, **JPG**, or **SVG**.
+
+* 📜 **Local history**</br>
+  Automatically saves your recent QR codes locally — no sign-in needed.
+
+* 🌐 **Mobile-friendly UI**</br>
+  Works great on all devices with a responsive layout.
+
+* 🧭 **Redirect page**</br>
+  Built-in redirect handling for dynamic QR codes using a simple `redirect.html` route.
 
 ---
 
