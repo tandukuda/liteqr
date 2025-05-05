@@ -6,6 +6,7 @@
 const textInput = document.getElementById('text-input');
 const qrSizeSelect = document.getElementById('qr-size');
 const errorLevelSelect = document.getElementById('error-level');
+const cornerStyleSelect = document.getElementById('corner-style');
 const foregroundColorInput = document.getElementById('foreground-color');
 const backgroundColorInput = document.getElementById('background-color');
 const dynamicQrCheckbox = document.getElementById('dynamic-qr');
@@ -32,6 +33,7 @@ function generateQR() {
     const text = textInput.value.trim();
     const size = parseInt(qrSizeSelect.value);
     const errorLevel = errorLevelSelect.value;
+    const cornerStyle = cornerStyleSelect.value;
     const foregroundColor = foregroundColorInput.value;
     const backgroundColor = backgroundColorInput.value;
     const isDynamic = dynamicQrCheckbox.checked;
@@ -89,6 +91,9 @@ function generateQR() {
                 correctLevel: QRCode.CorrectLevel[errorLevel]
             });
             
+            // Apply corner style
+            applyCornerStyle(cornerStyle);
+            
             qrcodeDiv.classList.remove('generating');
             
             // Save to history
@@ -97,6 +102,7 @@ function generateQR() {
                 isDynamic: isDynamic,
                 size: size,
                 errorLevel: errorLevel,
+                cornerStyle: cornerStyle,
                 foregroundColor: foregroundColor,
                 backgroundColor: backgroundColor,
                 timestamp: new Date().toISOString()
@@ -126,6 +132,135 @@ function generateQR() {
             placeholderText.style.display = 'block';
         }
     }, 600);
+}
+
+// Function to apply corner styles to the QR code
+function applyCornerStyle(style) {
+    // Get all the QR code cells
+    const qrImage = qrcodeDiv.querySelector('img');
+    
+    // If we have the QR code image, we need to convert it to SVG for styling
+    if (qrImage) {
+        // First create a container for our SVG QR code
+        const svgContainer = document.createElement('div');
+        svgContainer.style.width = qrImage.width + 'px';
+        svgContainer.style.height = qrImage.height + 'px';
+        
+        // Draw the QR code to a canvas to analyze its pixel data
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = qrImage.width;
+        canvas.height = qrImage.height;
+        ctx.drawImage(qrImage, 0, 0);
+        
+        // Get pixel data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        
+        // Create SVG
+        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">
+            <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
+        
+        // Determine the module size (each QR code square)
+        const moduleSize = canvas.width / window.qrcode._oQRCode.moduleCount;
+        
+        // Set radius based on corner style
+        let radius = 0;
+        switch(style) {
+            case 'slightly-rounded':
+                radius = moduleSize * 0.3; // 30% of a module size
+                break;
+            case 'very-rounded':
+                radius = moduleSize * 0.5; // 50% of a module size
+                break;
+            default: // square
+                radius = 0;
+        }
+        
+        // Only proceed with special styling for rounded corners
+        if (radius > 0) {
+            // Group all modules in the QR code
+            const moduleCount = window.qrcode._oQRCode.moduleCount;
+            
+            // Iterate through each module in the QR code
+            for (let row = 0; row < moduleCount; row++) {
+                for (let col = 0; col < moduleCount; col++) {
+                    // Check if this module should be colored (is dark)
+                    if (window.qrcode._oQRCode.isDark(row, col)) {
+                        // Determine the position of this module
+                        const x = col * moduleSize;
+                        const y = row * moduleSize;
+                        
+                        // Check if the surrounding modules are dark to determine if this is an edge
+                        const top = row > 0 ? window.qrcode._oQRCode.isDark(row - 1, col) : false;
+                        const right = col < moduleCount - 1 ? window.qrcode._oQRCode.isDark(row, col + 1) : false;
+                        const bottom = row < moduleCount - 1 ? window.qrcode._oQRCode.isDark(row + 1, col) : false;
+                        const left = col > 0 ? window.qrcode._oQRCode.isDark(row, col - 1) : false;
+                        
+                        // Determine if this is a corner module
+                        const topLeft = !top && !left;
+                        const topRight = !top && !right;
+                        const bottomLeft = !bottom && !left;
+                        const bottomRight = !bottom && !right;
+                        
+                        // Create the appropriate SVG shape based on surrounding modules
+                        // We'll use a rect with border-radius for rounded corners
+                        let rx = "0"; // Default x-radius
+                        let ry = "0"; // Default y-radius
+                        
+                        // Adjust radius based on position
+                        if (topLeft) rx = ry = `${radius}`;
+                        if (topRight) rx = ry = `${radius}`;
+                        if (bottomLeft) rx = ry = `${radius}`;
+                        if (bottomRight) rx = ry = `${radius}`;
+                        
+                        // Add the module to the SVG
+                        svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" rx="${rx}" ry="${ry}" />`;
+                    }
+                }
+            }
+        } else {
+            // For square style, use the original pixel data to create the SVG
+            const pixelSize = 1; // 1px per SVG rect for high resolution
+            
+            for (let y = 0; y < canvas.height; y += pixelSize) {
+                for (let x = 0; x < canvas.width; x += pixelSize) {
+                    const i = (y * canvas.width + x) * 4;
+                    // Check if this pixel is dark (not white)
+                    if (data[i] < 128 || data[i + 1] < 128 || data[i + 2] < 128) {
+                        svgContent += `<rect x="${x}" y="${y}" width="${pixelSize}" height="${pixelSize}" fill="${foregroundColorInput.value}" />`;
+                    }
+                }
+            }
+        }
+        
+        // Close the SVG
+        svgContent += `</svg>`;
+        
+        // Add the SVG to the container
+        svgContainer.innerHTML = svgContent;
+        
+        // Replace the QR code image with our SVG
+        qrImage.style.display = 'none';
+        qrImage.insertAdjacentElement('afterend', svgContainer);
+        
+        // Update the download methods to use our SVG
+        const svgBlob = new Blob([svgContent], {type: 'image/svg+xml'});
+        downloadSvg.href = URL.createObjectURL(svgBlob);
+        
+        // Also update the PNG and JPG download methods
+        const svgImage = new Image();
+        svgImage.onload = function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = svgImage.width;
+            canvas.height = svgImage.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(svgImage, 0, 0);
+            downloadPng.href = canvas.toDataURL('image/png');
+            downloadJpg.href = canvas.toDataURL('image/jpeg', 0.95);
+        };
+        svgImage.src = URL.createObjectURL(svgBlob);
+    }
 }
 
 // Function to update download links
@@ -215,6 +350,7 @@ window.regenerateQRWithThemeColors = function() {
     const text = textInput.value.trim();
     const size = parseInt(qrSizeSelect.value);
     const errorLevel = errorLevelSelect.value;
+    const cornerStyle = cornerStyleSelect.value;
     
     // Get theme-appropriate colors if user hasn't set custom colors
     const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
