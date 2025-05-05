@@ -62,17 +62,6 @@ function loadHistory() {
         let metaText = formatDate(item.timestamp);
         if (item.isDynamic) metaText += ' · Dynamic';
         
-        // Add pattern style info
-        if (item.cornerStyle && item.cornerStyle !== 'square') {
-            if (item.cornerStyle === 'circle') {
-                metaText += ' · Circle';
-            } else if (item.cornerStyle === 'slightly-rounded') {
-                metaText += ' · Rounded';
-            } else if (item.cornerStyle === 'very-rounded') {
-                metaText += ' · Very Rounded';
-            }
-        }
-        
         metadata.textContent = metaText;
         details.appendChild(metadata);
         
@@ -159,7 +148,6 @@ function restoreQrCode(index) {
     textInput.value = item.text;
     qrSizeSelect.value = item.size || 300;
     errorLevelSelect.value = item.errorLevel || 'M';
-    cornerStyleSelect.value = item.cornerStyle || 'square';
     foregroundColorInput.value = item.foregroundColor;
     backgroundColorInput.value = item.backgroundColor;
     dynamicQrCheckbox.checked = item.isDynamic;
