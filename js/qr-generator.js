@@ -300,8 +300,8 @@ function createCircularQRCode(data, size, moduleSize, moduleCount) {
                 const centerX = (col + 0.5) * moduleSize;
                 const centerY = (row + 0.5) * moduleSize;
                 
-                // Use a slightly smaller radius to ensure spacing between circles
-                const radius = moduleSize * 0.4;
+                // Use a much smaller radius (15% of module size)
+                const radius = moduleSize * 0.15;
                 
                 // Add the circle to the SVG
                 svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
