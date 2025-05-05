@@ -94,14 +94,14 @@ function generateQR() {
             // Remove generating class
             qrcodeDiv.classList.remove('generating');
             
-            // If a non-default corner style is selected, apply it after a slight delay
+            // If a non-default pattern style is selected, apply it after a slight delay
             // to ensure the QR code has fully rendered
             if (cornerStyle !== 'square') {
                 setTimeout(() => {
                     try {
-                        applyCornerStyle(cornerStyle);
+                        applyStyle(cornerStyle);
                     } catch (error) {
-                        console.error('Error applying corner style:', error);
+                        console.error('Error applying style:', error);
                         // If styling fails, the original QR code is still visible
                     }
                 }, 100);
@@ -145,8 +145,8 @@ function generateQR() {
     }, 600);
 }
 
-// Function to apply corner styles to the QR code
-function applyCornerStyle(style) {
+// Function to apply style to the QR code based on selection
+function applyStyle(style) {
     // Skip if the style is square (default)
     if (style === 'square') return;
     
@@ -157,16 +157,16 @@ function applyCornerStyle(style) {
         // If image isn't loaded yet, wait for it
         if (qrImage) {
             qrImage.onload = function() {
-                applyCornerStyleToImage(qrImage, style);
+                applyStyleToImage(qrImage, style);
             };
         }
         return;
     }
     
-    applyCornerStyleToImage(qrImage, style);
+    applyStyleToImage(qrImage, style);
 }
 
-function applyCornerStyleToImage(qrImage, style) {
+function applyStyleToImage(qrImage, style) {
     try {
         // Create a container for our styled QR code
         const svgContainer = document.createElement('div');
@@ -219,124 +219,20 @@ function applyCornerStyleToImage(qrImage, style) {
         let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
             <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
         
-        // Set radius based on corner style and module size - more QR-friendly values
-        let radius = 0;
-        if (style === 'slightly-rounded') {
-            radius = moduleSize * 0.15; // 15% rounding - very subtle but noticeable
-        } else if (style === 'very-rounded') {
-            radius = moduleSize * 0.3; // 30% rounding - more noticeable but still scannable
-        }
-        
-        // Create a 2D array to represent QR modules
-        const modules = Array(moduleCount).fill().map(() => Array(moduleCount).fill(false));
-        
-        // Detect dark modules
-        for (let row = 0; row < moduleCount; row++) {
-            for (let col = 0; col < moduleCount; col++) {
-                // Check the center of each module
-                const x = Math.floor((col + 0.5) * moduleSize);
-                const y = Math.floor((row + 0.5) * moduleSize);
-                
-                // Skip if out of bounds
-                if (x >= size || y >= size) continue;
-                
-                const pixelIndex = (y * size + x) * 4;
-                
-                // If pixel is dark (not white)
-                if (pixelIndex < data.length && data[pixelIndex] < 128) {
-                    modules[row][col] = true;
-                }
+        // Apply different styling based on the selected style
+        if (style === 'circle') {
+            svgContent = createCircularQRCode(data, size, moduleSize, moduleCount);
+        } else {
+            // Rounded corner styles
+            let radius = 0;
+            if (style === 'slightly-rounded') {
+                radius = moduleSize * 0.15; // 15% rounding - very subtle but noticeable
+            } else if (style === 'very-rounded') {
+                radius = moduleSize * 0.3; // 30% rounding - more noticeable but still scannable
             }
+            
+            svgContent = createRoundedQRCode(data, size, moduleSize, moduleCount, radius);
         }
-        
-        // Detect finder patterns (the three large squares in corners)
-        // These are typically at positions:
-        // - Top left: Around (0,0)
-        // - Top right: Around (moduleCount-7, 0)
-        // - Bottom left: Around (0, moduleCount-7)
-        const finderPatterns = [];
-        
-        // Add finder pattern positions (approximate)
-        finderPatterns.push({
-            top: 0, left: 0, 
-            bottom: Math.floor(moduleCount/7) + 1, 
-            right: Math.floor(moduleCount/7) + 1
-        });
-        
-        finderPatterns.push({
-            top: 0, 
-            left: moduleCount - Math.floor(moduleCount/7) - 1, 
-            bottom: Math.floor(moduleCount/7) + 1, 
-            right: moduleCount
-        });
-        
-        finderPatterns.push({
-            top: moduleCount - Math.floor(moduleCount/7) - 1, 
-            left: 0, 
-            bottom: moduleCount, 
-            right: Math.floor(moduleCount/7) + 1
-        });
-        
-        // Function to check if a module is part of a finder pattern
-        function isInFinderPattern(row, col) {
-            for (const pattern of finderPatterns) {
-                if (row >= pattern.top && row < pattern.bottom && 
-                    col >= pattern.left && col < pattern.right) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-        // Draw modules with rounded corners where appropriate
-        for (let row = 0; row < moduleCount; row++) {
-            for (let col = 0; col < moduleCount; col++) {
-                if (modules[row][col]) {
-                    const x = col * moduleSize;
-                    const y = row * moduleSize;
-                    
-                    // Don't round finder patterns
-                    if (isInFinderPattern(row, col)) {
-                        svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
-                        continue;
-                    }
-                    
-                    // Check surrounding modules to determine corners
-                    const hasTop = row > 0 && modules[row-1][col];
-                    const hasRight = col < moduleCount-1 && modules[row][col+1];
-                    const hasBottom = row < moduleCount-1 && modules[row+1][col];
-                    const hasLeft = col > 0 && modules[row][col-1];
-                    
-                    // Calculate corner radii
-                    const topLeftRadius = (!hasTop && !hasLeft) ? radius : 0;
-                    const topRightRadius = (!hasTop && !hasRight) ? radius : 0;
-                    const bottomLeftRadius = (!hasBottom && !hasLeft) ? radius : 0;
-                    const bottomRightRadius = (!hasBottom && !hasRight) ? radius : 0;
-                    
-                    // If no rounded corners, just use a rectangle
-                    if (topLeftRadius === 0 && topRightRadius === 0 && 
-                        bottomLeftRadius === 0 && bottomRightRadius === 0) {
-                        svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
-                    } else {
-                        // Create path for rounded corners
-                        svgContent += `<path d="
-                            M ${x + topLeftRadius} ${y}
-                            L ${x + moduleSize - topRightRadius} ${y}
-                            Q ${x + moduleSize} ${y} ${x + moduleSize} ${y + topRightRadius}
-                            L ${x + moduleSize} ${y + moduleSize - bottomRightRadius}
-                            Q ${x + moduleSize} ${y + moduleSize} ${x + moduleSize - bottomRightRadius} ${y + moduleSize}
-                            L ${x + bottomLeftRadius} ${y + moduleSize}
-                            Q ${x} ${y + moduleSize} ${x} ${y + moduleSize - bottomLeftRadius}
-                            L ${x} ${y + topLeftRadius}
-                            Q ${x} ${y} ${x + topLeftRadius} ${y}
-                            Z" fill="${foregroundColorInput.value}" />`;
-                    }
-                }
-            }
-        }
-        
-        // Close SVG
-        svgContent += `</svg>`;
         
         // Add the SVG to the container
         svgContainer.innerHTML = svgContent;
@@ -368,6 +264,248 @@ function applyCornerStyleToImage(qrImage, style) {
         // Make original QR code visible in case of an error
         qrImage.style.display = 'block';
     }
+}
+
+// Function to create a circular QR code
+function createCircularQRCode(data, size, moduleSize, moduleCount) {
+    // Create a 2D array to represent QR modules
+    const modules = Array(moduleCount).fill().map(() => Array(moduleCount).fill(false));
+    
+    // Detect dark modules
+    for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+            // Check the center of each module
+            const x = Math.floor((col + 0.5) * moduleSize);
+            const y = Math.floor((row + 0.5) * moduleSize);
+            
+            // Skip if out of bounds
+            if (x >= size || y >= size) continue;
+            
+            const pixelIndex = (y * size + x) * 4;
+            
+            // If pixel is dark (not white)
+            if (pixelIndex < data.length && data[pixelIndex] < 128) {
+                modules[row][col] = true;
+            }
+        }
+    }
+    
+    // Detect finder patterns (the three large squares in corners)
+    // These are typically at positions:
+    // - Top left: Around (0,0)
+    // - Top right: Around (moduleCount-7, 0)
+    // - Bottom left: Around (0, moduleCount-7)
+    const finderPatterns = [];
+    
+    // Add finder pattern positions (approximate)
+    finderPatterns.push({
+        top: 0, left: 0, 
+        bottom: Math.floor(moduleCount/7) + 1, 
+        right: Math.floor(moduleCount/7) + 1
+    });
+    
+    finderPatterns.push({
+        top: 0, 
+        left: moduleCount - Math.floor(moduleCount/7) - 1, 
+        bottom: Math.floor(moduleCount/7) + 1, 
+        right: moduleCount
+    });
+    
+    finderPatterns.push({
+        top: moduleCount - Math.floor(moduleCount/7) - 1, 
+        left: 0, 
+        bottom: moduleCount, 
+        right: Math.floor(moduleCount/7) + 1
+    });
+    
+    // Function to check if a module is part of a finder pattern
+    function isInFinderPattern(row, col) {
+        for (const pattern of finderPatterns) {
+            if (row >= pattern.top && row < pattern.bottom && 
+                col >= pattern.left && col < pattern.right) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // Function to determine if a position is in the center of a finder pattern
+    function isFinderPatternCenter(row, col) {
+        // Check if the module is within a finder pattern
+        let isInFinder = false;
+        let finderIndex = -1;
+        
+        for (let i = 0; i < finderPatterns.length; i++) {
+            const pattern = finderPatterns[i];
+            if (row >= pattern.top && row < pattern.bottom && 
+                col >= pattern.left && col < pattern.right) {
+                isInFinder = true;
+                finderIndex = i;
+                break;
+            }
+        }
+        
+        if (!isInFinder) return false;
+        
+        // Calculate centers of finder patterns
+        const fp = finderPatterns[finderIndex];
+        const centerRow = fp.top + Math.floor((fp.bottom - fp.top) / 2);
+        const centerCol = fp.left + Math.floor((fp.right - fp.left) / 2);
+        
+        // Check if the module is at the center of the finder pattern
+        return (row === centerRow && col === centerCol);
+    }
+    
+    // Start SVG content
+    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
+    
+    // Draw modules as circles
+    for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+            if (modules[row][col]) {
+                const centerX = (col + 0.5) * moduleSize;
+                const centerY = (row + 0.5) * moduleSize;
+                
+                // Special handling for finder patterns
+                if (isInFinderPattern(row, col)) {
+                    // Use larger circles for finder pattern centers
+                    if (isFinderPatternCenter(row, col)) {
+                        // Center circle is larger
+                        const radius = moduleSize * 1.2;
+                        svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
+                    } else {
+                        // Regular finder pattern dot
+                        const radius = moduleSize * 0.45; // Slightly smaller to ensure spacing
+                        svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
+                    }
+                } else {
+                    // Regular data dot
+                    const radius = moduleSize * 0.4; // Make dots slightly smaller than the module size
+                    svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
+                }
+            }
+        }
+    }
+    
+    // Close SVG
+    svgContent += `</svg>`;
+    return svgContent;
+}
+
+// Function to create a rounded-corner QR code
+function createRoundedQRCode(data, size, moduleSize, moduleCount, radius) {
+    // Create a 2D array to represent QR modules
+    const modules = Array(moduleCount).fill().map(() => Array(moduleCount).fill(false));
+    
+    // Detect dark modules
+    for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+            // Check the center of each module
+            const x = Math.floor((col + 0.5) * moduleSize);
+            const y = Math.floor((row + 0.5) * moduleSize);
+            
+            // Skip if out of bounds
+            if (x >= size || y >= size) continue;
+            
+            const pixelIndex = (y * size + x) * 4;
+            
+            // If pixel is dark (not white)
+            if (pixelIndex < data.length && data[pixelIndex] < 128) {
+                modules[row][col] = true;
+            }
+        }
+    }
+    
+    // Detect finder patterns (the three large squares in corners)
+    const finderPatterns = [];
+    
+    // Add finder pattern positions (approximate)
+    finderPatterns.push({
+        top: 0, left: 0, 
+        bottom: Math.floor(moduleCount/7) + 1, 
+        right: Math.floor(moduleCount/7) + 1
+    });
+    
+    finderPatterns.push({
+        top: 0, 
+        left: moduleCount - Math.floor(moduleCount/7) - 1, 
+        bottom: Math.floor(moduleCount/7) + 1, 
+        right: moduleCount
+    });
+    
+    finderPatterns.push({
+        top: moduleCount - Math.floor(moduleCount/7) - 1, 
+        left: 0, 
+        bottom: moduleCount, 
+        right: Math.floor(moduleCount/7) + 1
+    });
+    
+    // Function to check if a module is part of a finder pattern
+    function isInFinderPattern(row, col) {
+        for (const pattern of finderPatterns) {
+            if (row >= pattern.top && row < pattern.bottom && 
+                col >= pattern.left && col < pattern.right) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    // Start SVG content
+    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
+    
+    // Draw modules with rounded corners where appropriate
+    for (let row = 0; row < moduleCount; row++) {
+        for (let col = 0; col < moduleCount; col++) {
+            if (modules[row][col]) {
+                const x = col * moduleSize;
+                const y = row * moduleSize;
+                
+                // Don't round finder patterns
+                if (isInFinderPattern(row, col)) {
+                    svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
+                    continue;
+                }
+                
+                // Check surrounding modules to determine corners
+                const hasTop = row > 0 && modules[row-1][col];
+                const hasRight = col < moduleCount-1 && modules[row][col+1];
+                const hasBottom = row < moduleCount-1 && modules[row+1][col];
+                const hasLeft = col > 0 && modules[row][col-1];
+                
+                // Calculate corner radii
+                const topLeftRadius = (!hasTop && !hasLeft) ? radius : 0;
+                const topRightRadius = (!hasTop && !hasRight) ? radius : 0;
+                const bottomLeftRadius = (!hasBottom && !hasLeft) ? radius : 0;
+                const bottomRightRadius = (!hasBottom && !hasRight) ? radius : 0;
+                
+                // If no rounded corners, just use a rectangle
+                if (topLeftRadius === 0 && topRightRadius === 0 && 
+                    bottomLeftRadius === 0 && bottomRightRadius === 0) {
+                    svgContent += `<rect x="${x}" y="${y}" width="${moduleSize}" height="${moduleSize}" fill="${foregroundColorInput.value}" />`;
+                } else {
+                    // Create path for rounded corners
+                    svgContent += `<path d="
+                        M ${x + topLeftRadius} ${y}
+                        L ${x + moduleSize - topRightRadius} ${y}
+                        Q ${x + moduleSize} ${y} ${x + moduleSize} ${y + topRightRadius}
+                        L ${x + moduleSize} ${y + moduleSize - bottomRightRadius}
+                        Q ${x + moduleSize} ${y + moduleSize} ${x + moduleSize - bottomRightRadius} ${y + moduleSize}
+                        L ${x + bottomLeftRadius} ${y + moduleSize}
+                        Q ${x} ${y + moduleSize} ${x} ${y + moduleSize - bottomLeftRadius}
+                        L ${x} ${y + topLeftRadius}
+                        Q ${x} ${y} ${x + topLeftRadius} ${y}
+                        Z" fill="${foregroundColorInput.value}" />`;
+                }
+            }
+        }
+    }
+    
+    // Close SVG
+    svgContent += `</svg>`;
+    return svgContent;
 }
 
 // Function to update download links
@@ -455,8 +593,9 @@ function generateSvgQrCode() {
         // Create SVG
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
             <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
-        
-        // Add each dark pixel as a small rectangle
+
+
+    // Add each dark pixel as a rectangle
         const pixelSize = 1;
         for (let y = 0; y < canvas.height; y += pixelSize) {
             for (let x = 0; x < canvas.width; x += pixelSize) {
@@ -472,7 +611,7 @@ function generateSvgQrCode() {
         return svg;
     } catch (error) {
         console.error('Error generating SVG QR code:', error);
-        return '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50">SVG Error</text></svg>';
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="10" y="50">QR Error</text></svg>';
     }
 }
 
