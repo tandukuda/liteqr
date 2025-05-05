@@ -77,6 +77,8 @@ LiteQR/
 - [X] Dynamic QR redirection (optional Firebase layer)
 - [ ] Share via Web Share API
 - [ ] Installable PWA support
+- [ ] Rounded corner
+- [ ] Circle pattern
 
 ---
 
