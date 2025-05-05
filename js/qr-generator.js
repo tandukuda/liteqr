@@ -215,11 +215,9 @@ function applyStyleToImage(qrImage, style) {
         // Estimate module count based on moduleSize
         const moduleCount = Math.ceil(size / moduleSize);
         
-        // Create SVG content
-        let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-            <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
-        
         // Apply different styling based on the selected style
+        let svgContent = '';
+        
         if (style === 'circle') {
             svgContent = createCircularQRCode(data, size, moduleSize, moduleCount);
         } else {
@@ -268,6 +266,10 @@ function applyStyleToImage(qrImage, style) {
 
 // Function to create a circular QR code
 function createCircularQRCode(data, size, moduleSize, moduleCount) {
+    // Start SVG content
+    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
+    
     // Create a 2D array to represent QR modules
     const modules = Array(moduleCount).fill().map(() => Array(moduleCount).fill(false));
     
@@ -290,100 +292,19 @@ function createCircularQRCode(data, size, moduleSize, moduleCount) {
         }
     }
     
-    // Detect finder patterns (the three large squares in corners)
-    // These are typically at positions:
-    // - Top left: Around (0,0)
-    // - Top right: Around (moduleCount-7, 0)
-    // - Bottom left: Around (0, moduleCount-7)
-    const finderPatterns = [];
-    
-    // Add finder pattern positions (approximate)
-    finderPatterns.push({
-        top: 0, left: 0, 
-        bottom: Math.floor(moduleCount/7) + 1, 
-        right: Math.floor(moduleCount/7) + 1
-    });
-    
-    finderPatterns.push({
-        top: 0, 
-        left: moduleCount - Math.floor(moduleCount/7) - 1, 
-        bottom: Math.floor(moduleCount/7) + 1, 
-        right: moduleCount
-    });
-    
-    finderPatterns.push({
-        top: moduleCount - Math.floor(moduleCount/7) - 1, 
-        left: 0, 
-        bottom: moduleCount, 
-        right: Math.floor(moduleCount/7) + 1
-    });
-    
-    // Function to check if a module is part of a finder pattern
-    function isInFinderPattern(row, col) {
-        for (const pattern of finderPatterns) {
-            if (row >= pattern.top && row < pattern.bottom && 
-                col >= pattern.left && col < pattern.right) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    // Function to determine if a position is in the center of a finder pattern
-    function isFinderPatternCenter(row, col) {
-        // Check if the module is within a finder pattern
-        let isInFinder = false;
-        let finderIndex = -1;
-        
-        for (let i = 0; i < finderPatterns.length; i++) {
-            const pattern = finderPatterns[i];
-            if (row >= pattern.top && row < pattern.bottom && 
-                col >= pattern.left && col < pattern.right) {
-                isInFinder = true;
-                finderIndex = i;
-                break;
-            }
-        }
-        
-        if (!isInFinder) return false;
-        
-        // Calculate centers of finder patterns
-        const fp = finderPatterns[finderIndex];
-        const centerRow = fp.top + Math.floor((fp.bottom - fp.top) / 2);
-        const centerCol = fp.left + Math.floor((fp.right - fp.left) / 2);
-        
-        // Check if the module is at the center of the finder pattern
-        return (row === centerRow && col === centerCol);
-    }
-    
-    // Start SVG content
-    let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
-    
-    // Draw modules as circles
+    // Draw each module as a circle
     for (let row = 0; row < moduleCount; row++) {
         for (let col = 0; col < moduleCount; col++) {
             if (modules[row][col]) {
+                // Calculate the center of the module
                 const centerX = (col + 0.5) * moduleSize;
                 const centerY = (row + 0.5) * moduleSize;
                 
-                // Special handling for finder patterns
-                if (isInFinderPattern(row, col)) {
-                    // Use larger circles for finder pattern centers
-                    if (isFinderPatternCenter(row, col)) {
-                        // Center circle is larger
-                        const radius = moduleSize * 1.2;
-                        svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
-                    } else {
-                        // Regular finder pattern dot
-                        const radius = moduleSize * 0.45; // Slightly smaller to ensure spacing
-                        svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
-                    }
-                } else {
-                    // Regular data dot
-                    const radius = moduleSize * 0.4; // Make dots slightly smaller than the module size
-                    svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
-                }
+                // Use a slightly smaller radius to ensure spacing between circles
+                const radius = moduleSize * 0.4;
+                
+                // Add the circle to the SVG
+                svgContent += `<circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="${foregroundColorInput.value}" />`;
             }
         }
     }
@@ -593,9 +514,8 @@ function generateSvgQrCode() {
         // Create SVG
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
             <rect width="100%" height="100%" fill="${backgroundColorInput.value}"/>`;
-
-
-    // Add each dark pixel as a rectangle
+        
+        // Add each dark pixel as a rectangle
         const pixelSize = 1;
         for (let y = 0; y < canvas.height; y += pixelSize) {
             for (let x = 0; x < canvas.width; x += pixelSize) {
