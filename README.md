@@ -66,8 +66,7 @@ LiteQR/
 │   ├── history.js            # Local history handling
 │   ├── theme.js              # Dark/light mode
 │   └── utils.js              # Helper functions
-├── assets/                   # Icons, favicon, etc.
-└── vercel.json               # Optional routing config
+└── assets/                   # Icons, favicon, etc.
 ```
 
 ---
