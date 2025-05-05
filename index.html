@@ -7,7 +7,7 @@
     <meta name="description" content="Free QR code generator with customization options, history tracking and dynamic QR codes">
     
     <!-- Simplified favicon -->
-    <link rel="icon" href="assets/favicon.ico">
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
@@ -68,10 +68,12 @@
                     </div>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group dynamic-toggle-container">
+                    <label>Dynamic QR Code</label>
                     <div class="dynamic-qr-toggle">
                         <input type="checkbox" id="dynamic-qr" class="toggle-checkbox">
-                        <label for="dynamic-qr" class="toggle-label">Make Dynamic QR</label>
+                        <label for="dynamic-qr" class="toggle-label"></label>
+                        <span class="toggle-text">Make Dynamic QR</span>
                         <div class="tooltip">
                             <i class="fas fa-info-circle"></i>
                             <span class="tooltip-text">Dynamic QRs can be tracked and updated later</span>
@@ -129,7 +131,7 @@
     </div>
 
     <footer>
-        <p>LiteQR &copy; <span id="current-year"></span> | Made with <i class="fas fa-heart" style="color: var(--highlight);"></i> by tandukuda</p>
+        <p>LiteQR &copy; <span id="current-year"></span> | Made with <i class="fas fa-heart" style="color: var(--highlight);"></i></p>
     </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
