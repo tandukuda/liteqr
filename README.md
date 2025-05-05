@@ -30,7 +30,7 @@ Generate regular QR codes or use dynamic mode to update destination links withou
 
 ## 📸 Preview
 
-![LiteQR](https://github.com/user-attachments/assets/6abc5692-e7ba-4e85-bd71-0c64e0c7e7f4)
+![LiteQR](https://github.com/user-attachments/assets/e2be8d07-71f3-4f84-af90-5f485a0d739f)
 
 ---
 
