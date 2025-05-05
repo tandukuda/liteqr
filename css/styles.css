@@ -515,6 +515,7 @@ button:active {
     border: 1px solid var(--border-color);
     transition: var(--transition);
     width: 100%;
+    position: relative;
 }
 
 @media (min-width: 768px) {
@@ -643,6 +644,11 @@ footer {
     color: var(--text-secondary);
     text-align: center;
     font-size: 0.95rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
 }
 
 /* QR Code animation */
