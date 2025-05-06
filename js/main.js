@@ -21,6 +21,15 @@ function initApp() {
     // Load history
     loadHistory();
     
+    // Initialize the logo upload elements
+    const logoUpload = document.getElementById('logo-upload');
+    const logoPreview = document.getElementById('logo-preview');
+    const removeLogoBtn = document.getElementById('remove-logo');
+    const logoSizeSelect = document.getElementById('logo-size');
+
+    // Make sure the remove button is hidden initially
+    removeLogoBtn.style.display = 'none';
+    
     // Add ripple effect to buttons
     document.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', function(e) {
