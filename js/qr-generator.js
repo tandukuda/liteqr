@@ -177,6 +177,9 @@ function generateQRWithLogo(qrContent, size, errorLevel, foregroundColor, backgr
         case "small":
             logoWidth = logoHeight = size * 0.15;
             break;
+        case "large":
+            logoWidth = logoHeight = size * 0.35;
+            break;
         case "medium":
         default:
             logoWidth = logoHeight = size * 0.25;
