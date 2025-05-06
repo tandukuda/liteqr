@@ -771,51 +771,65 @@ footer {
     }
 }
 
-.logo-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-  gap: 10px;
+/* Logo upload styling */
+.logo-upload-container {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
 .custom-file-upload {
-  display: inline-block;
-  padding: 6px 12px;
-  cursor: pointer;
-  background-color: var(--accent-color);
-  color: white;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background-color 0.3s;
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    background-color: var(--secondary-color);
+    color: white;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    transition: var(--transition);
 }
 
 .custom-file-upload:hover {
-  background-color: var(--accent-color-hover);
+    background-color: var(--highlight);
+    transform: translateY(-1px);
 }
 
 .logo-preview {
-  width: 50px;
-  height: 50px;
-  border: 1px dashed var(--border-color);
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  background-color: var(--bg-color-lighter);
+    width: 48px;
+    height: 48px;
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: var(--bg-secondary);
 }
 
 .logo-preview img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
-.logo-options {
-  margin-top: 10px;
+.logo-size-container {
+    margin-top: 0.5rem;
 }
 
 #remove-logo {
-  display: none;
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 0.4rem 0.7rem;
+    font-size: 0.8rem;
+    display: none;
+}
+
+#remove-logo:hover {
+    color: var(--highlight);
+    border-color: var(--highlight);
+    background-color: rgba(180, 99, 122, 0.1);
 }
