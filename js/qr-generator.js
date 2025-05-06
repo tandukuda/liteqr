@@ -17,9 +17,17 @@ const downloadPng = document.getElementById('download-png');
 const downloadJpg = document.getElementById('download-jpg');
 const downloadSvg = document.getElementById('download-svg');
 const inputError = document.getElementById('input-error');
+const logoUpload = document.getElementById('logo-upload');
+const logoPreview = document.getElementById('logo-preview');
+const removeLogoBtn = document.getElementById('remove-logo');
+const logoSizeSelect = document.getElementById('logo-size');
 
 // QR Code instance
 window.qrcode = null;
+
+// Logo variables
+let userLogo = null;
+let logoSize = "medium"; // Default logo size
 
 // Function to get base URL for dynamic QR codes
 function getBaseUrl() {
@@ -79,18 +87,26 @@ function generateQR() {
                 adjustedSize = 250;
             }
             
-            // Create the QR code
-            window.qrcode = new QRCode(qrcodeDiv, {
-                text: qrContent,
-                width: adjustedSize,
-                height: adjustedSize,
-                colorDark: foregroundColor,
-                colorLight: backgroundColor,
-                correctLevel: QRCode.CorrectLevel[errorLevel]
-            });
-            
-            // Remove generating class
-            qrcodeDiv.classList.remove('generating');
+            // Check if we have a logo to embed
+            if (userLogo) {
+                generateQRWithLogo(qrContent, adjustedSize, errorLevel, foregroundColor, backgroundColor);
+            } else {
+                // Create the QR code without logo
+                window.qrcode = new QRCode(qrcodeDiv, {
+                    text: qrContent,
+                    width: adjustedSize,
+                    height: adjustedSize,
+                    colorDark: foregroundColor,
+                    colorLight: backgroundColor,
+                    correctLevel: QRCode.CorrectLevel[errorLevel]
+                });
+                
+                // Remove generating class
+                qrcodeDiv.classList.remove('generating');
+                
+                // Create download links
+                updateDownloadLinks();
+            }
             
             // Save to history
             const qrData = {
@@ -100,12 +116,11 @@ function generateQR() {
                 errorLevel: errorLevel,
                 foregroundColor: foregroundColor,
                 backgroundColor: backgroundColor,
+                hasLogo: userLogo !== null,
+                logoSize: logoSize,
                 timestamp: new Date().toISOString()
             };
             saveToHistory(qrData);
-            
-            // Create download links
-            updateDownloadLinks();
             
             // Show download options with animation
             downloadOptions.classList.remove('hidden');
@@ -127,6 +142,79 @@ function generateQR() {
             placeholderText.style.display = 'block';
         }
     }, 600);
+}
+
+// Function to generate QR code with logo
+function generateQRWithLogo(qrContent, size, errorLevel, foregroundColor, backgroundColor) {
+    // Create a temporary div to hold the QR code
+    const tempDiv = document.createElement("div");
+    
+    // Generate the QR code in the temporary div
+    const tempQRCode = new QRCode(tempDiv, {
+        text: qrContent,
+        width: size,
+        height: size,
+        colorDark: foregroundColor,
+        colorLight: backgroundColor,
+        correctLevel: QRCode.CorrectLevel[errorLevel]
+    });
+    
+    // Get the canvas with the QR code
+    const qrCanvas = tempDiv.querySelector("canvas");
+    
+    // Create a new canvas to combine QR code and logo
+    const combinedCanvas = document.createElement("canvas");
+    combinedCanvas.width = size;
+    combinedCanvas.height = size;
+    const ctx = combinedCanvas.getContext("2d");
+    
+    // Draw the QR code onto the combined canvas
+    ctx.drawImage(qrCanvas, 0, 0, size, size);
+    
+    // Calculate logo size based on selection
+    let logoWidth, logoHeight;
+    switch (logoSize) {
+        case "small":
+            logoWidth = logoHeight = size * 0.15;
+            break;
+        case "large":
+            logoWidth = logoHeight = size * 0.35;
+            break;
+        case "medium":
+        default:
+            logoWidth = logoHeight = size * 0.25;
+            break;
+    }
+    
+    // Calculate position (center)
+    const logoX = (size - logoWidth) / 2;
+    const logoY = (size - logoHeight) / 2;
+    
+    // Draw a white background for the logo to ensure good contrast
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(logoX - 2, logoY - 2, logoWidth + 4, logoHeight + 4);
+    
+    // Draw the logo
+    ctx.drawImage(userLogo, logoX, logoY, logoWidth, logoHeight);
+    
+    // Create an image element from the combined canvas
+    const combinedImg = document.createElement("img");
+    combinedImg.src = combinedCanvas.toDataURL("image/png");
+    
+    // Add the combined image to the qrcode div
+    qrcodeDiv.appendChild(combinedImg);
+    qrcodeDiv.classList.remove('generating');
+    
+    // Store reference for downloadable content
+    window.qrcode = {
+        _el: qrcodeDiv,
+        _oDrawing: {
+            _elCanvas: combinedCanvas
+        }
+    };
+    
+    // Update download links
+    updateDownloadLinks();
 }
 
 // Function to update download links
@@ -229,6 +317,66 @@ function generateSvgQrCode() {
     }
 }
 
+// Function to handle logo upload
+function handleLogoUpload(event) {
+    if (event.target.files && event.target.files[0]) {
+        const file = event.target.files[0];
+        
+        // Check file type
+        if (!file.type.match('image.*')) {
+            alert('Please select an image file');
+            return;
+        }
+        
+        // Create image from the file
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Create an image element for the logo
+            userLogo = new Image();
+            userLogo.onload = function() {
+                // Create a preview
+                logoPreview.innerHTML = '';
+                const previewImg = document.createElement('img');
+                previewImg.src = e.target.result;
+                logoPreview.appendChild(previewImg);
+                
+                // Show remove button
+                removeLogoBtn.style.display = 'inline-block';
+                
+                // Regenerate QR code if it already exists
+                if (textInput.value.trim() !== '') {
+                    generateQR();
+                }
+            };
+            userLogo.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Function to remove logo
+function removeLogo() {
+    userLogo = null;
+    logoPreview.innerHTML = '';
+    logoUpload.value = '';
+    removeLogoBtn.style.display = 'none';
+    
+    // Regenerate QR code if it already exists
+    if (textInput.value.trim() !== '') {
+        generateQR();
+    }
+}
+
+// Function to handle logo size change
+function handleLogoSizeChange() {
+    logoSize = logoSizeSelect.value;
+    
+    // Regenerate QR code if it already exists and logo is set
+    if (userLogo && textInput.value.trim() !== '') {
+        generateQR();
+    }
+}
+
 // Function to regenerate QR code with current theme colors
 window.regenerateQRWithThemeColors = function() {
     // Get current settings
@@ -260,6 +408,9 @@ window.regenerateQRWithThemeColors = function() {
 
 // Event listeners
 generateBtn.addEventListener('click', generateQR);
+logoUpload.addEventListener('change', handleLogoUpload);
+removeLogoBtn.addEventListener('click', removeLogo);
+logoSizeSelect.addEventListener('change', handleLogoSizeChange);
 
 // Also generate QR code when Enter key is pressed in input field
 textInput.addEventListener('keyup', function(event) {
