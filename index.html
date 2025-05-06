@@ -67,6 +67,26 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="settings-group">
+                  <h3>Logo Options</h3>
+                  <div class="logo-container">
+                    <label for="logo-upload" class="custom-file-upload">
+                      <i class="fas fa-upload"></i> Upload Logo
+                    </label>
+                    <input type="file" id="logo-upload" accept="image/*" style="display: none;">
+                    <div id="logo-preview" class="logo-preview"></div>
+                    <button id="remove-logo" class="btn btn-sm btn-outline">Remove Logo</button>
+                  </div>
+                  <div class="logo-options">
+                    <label for="logo-size">Logo Size</label>
+                    <select id="logo-size" class="select">
+                      <option value="small">Small (15%)</option>
+                      <option value="medium" selected>Medium (25%)</option>
+                      <option value="large">Large (35%)</option>
+                    </select>
+                  </div>
+                </div>
                 
                 <div class="form-group dynamic-toggle-container">
                     <label>Dynamic QR Code</label>
