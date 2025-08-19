@@ -833,3 +833,27 @@ footer {
     border-color: var(--highlight);
     background-color: rgba(180, 99, 122, 0.1);
 }
+
+.alink {
+  color: green;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.avisited {
+  color: pink;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.ahover {
+  color: red;
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+.aactive {
+  color: yellow;
+  background-color: transparent;
+  text-decoration: underline;
+}
