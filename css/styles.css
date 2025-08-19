@@ -835,25 +835,26 @@ footer {
 }
 
 .alink {
-  color: green;
+  color: var(--primary-color);
   background-color: transparent;
   text-decoration: none;
 }
 
 .avisited {
-  color: pink;
+  color: var(--accent-color);
   background-color: transparent;
   text-decoration: none;
 }
 
 .ahover {
-  color: red;
+  color: var(--primary-hover);
   background-color: transparent;
   text-decoration: underline;
 }
 
 .aactive {
-  color: yellow;
+  color: var(--secondary-color);
   background-color: transparent;
   text-decoration: underline;
 }
+
